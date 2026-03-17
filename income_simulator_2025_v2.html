@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>年収シミュレーター 2025年度</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans JP', sans-serif; background: #f5f7fa; color: #1a2a4a; min-height: 100vh; padding: 2rem 1rem; }
+.app { max-width: 980px; margin: 0 auto; }
+h1 { font-size: 20px; font-weight: 600; color: #0d1f3c; margin-bottom: 4px; letter-spacing: -0.02em; }
+.subtitle { font-size: 12px; color: #6b7fa3; margin-bottom: 1.5rem; }
+.card { background: #fff; border: 1px solid #dde3ee; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+.card-header { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6b7fa3; margin-bottom: 1.25rem; padding-bottom: 10px; border-bottom: 1px solid #edf0f7; }
+.badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding: 0 7px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.badge-a  { background: #dbeafe; color: #1e40af; }
+.badge-b1 { background: #d1fae5; color: #065f46; }
+.badge-b2 { background: #ede9fe; color: #5b21b6; }
+
+/* PARAMS GRID */
+.params-grid { display: grid; grid-template-columns: 220px 1fr; gap: 1.25rem; }
+.section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #6b7fa3; text-transform: uppercase; margin-bottom: 10px; }
+.input-group { margin-bottom: 10px; }
+.input-label { display: block; font-size: 12px; color: #4a5878; margin-bottom: 4px; font-weight: 500; }
+.input-sub { font-size: 11px; color: #8fa0bf; margin-top: 3px; }
+input[type="number"], select {
+  width: 100%; padding: 7px 10px; font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  border: 1px solid #dde3ee; border-radius: 8px;
+  background: #f8fafc; color: #1a2a4a; transition: border-color 0.15s;
+  -webkit-appearance: none; appearance: none;
+}
+input[type="number"]:focus, select:focus { outline: none; border-color: #3b82f6; background: #fff; }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7fa3' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; cursor: pointer; }
+
+/* CASE BOXES */
+.cases-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.case-box { background: #f8fafc; border: 1px solid #edf0f7; border-radius: 10px; padding: 12px; }
+.case-box-header { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 12px; color: #4a5878; font-weight: 500; }
+.case-box.b1 { border-color: #a7f3d0; }
+.case-box.b2 { border-color: #ddd6fe; }
+
+/* RESULT TABLE */
+.result-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+thead th {
+  font-size: 11px; font-weight: 600; color: #6b7fa3;
+  padding: 8px 12px; border-bottom: 1px solid #edf0f7;
+  text-align: right; white-space: nowrap;
+}
+thead th:first-child { text-align: left; white-space: normal; }
+thead th.group-header {
+  text-align: center; border-bottom: none;
+  padding-bottom: 4px; font-size: 12px;
+}
+thead tr.sub-header th { padding-top: 2px; padding-bottom: 8px; }
+tbody td {
+  padding: 9px 12px; border-bottom: 1px solid #f0f3f9;
+  text-align: right; color: #1a2a4a;
+  font-variant-numeric: tabular-nums;
+}
+tbody td:first-child { text-align: left; color: #4a5878; font-size: 12px; white-space: normal; min-width: 120px; }
+tbody tr.hl td { background: #f0f6ff; font-weight: 600; color: #0d1f3c; }
+tbody tr.hl td:first-child { color: #0d1f3c; }
+tbody tr.sub td:first-child { color: #8fa0bf; font-size: 11px; padding-left: 20px; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr.sep td { border-top: 1px solid #dde3ee; }
+.col-a  { color: #1e40af; }
+.col-b1 { color: #065f46; }
+.col-b2 { color: #5b21b6; }
+.col-monthly { color: #8fa0bf; font-size: 12px; }
+
+/* DIFF */
+.diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; }
+.diff-card { background: #f8fafc; border: 1px solid #edf0f7; border-radius: 10px; padding: 1rem 1.25rem; }
+.diff-title { font-size: 11px; font-weight: 600; color: #6b7fa3; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.diff-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; border-bottom: 1px solid #edf0f7; }
+.diff-row:last-child { border-bottom: none; }
+.diff-label { color: #4a5878; }
+.pos { color: #065f46; font-weight: 600; }
+.neg { color: #991b1b; font-weight: 600; }
+
+/* DETAIL TAB */
+.tab-row { display: flex; gap: 6px; margin-bottom: 1.25rem; }
+.tab-btn { font-size: 12px; font-family: 'Noto Sans JP', sans-serif; padding: 5px 14px; border-radius: 8px; border: 1px solid #dde3ee; background: transparent; cursor: pointer; color: #6b7fa3; font-weight: 500; transition: all 0.15s; }
+.tab-btn:hover { background: #f0f4ff; }
+.tab-btn.active-a  { background: #dbeafe; color: #1e40af; border-color: transparent; font-weight: 600; }
+.tab-btn.active-b1 { background: #d1fae5; color: #065f46; border-color: transparent; font-weight: 600; }
+.tab-btn.active-b2 { background: #ede9fe; color: #5b21b6; border-color: transparent; font-weight: 600; }
+.detail-note { font-size: 11px; color: #8fa0bf; text-align: left; white-space: normal; max-width: 200px; }
+.ded-val { color: #991b1b; }
+
+footer { text-align: center; font-size: 11px; color: #8fa0bf; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #edf0f7; line-height: 1.8; }
+@media (max-width: 680px) {
+  .params-grid { grid-template-columns: 1fr; }
+  .cases-grid { grid-template-columns: 1fr; }
+  .diff-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>年収シミュレーター</h1>
+  <p class="subtitle">2025年度（令和7年度）税制・社会保険制度に基づく 給与／業務委託 混在ケース比較</p>
+
+  <!-- PARAMS -->
+  <div class="card">
+    <div class="card-header">前提条件・パラメータ設定</div>
+    <div class="params-grid">
+      <div>
+        <div class="section-label">共通設定</div>
+        <div class="input-group">
+          <label class="input-label">年齢</label>
+          <input type="number" id="age" value="40" min="20" max="75" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">都道府県</label>
+          <select id="pref"></select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">その他所得控除（万円）</label>
+          <input type="number" id="otherDeduction" value="0" min="0" />
+          <div class="input-sub">配偶者控除・扶養控除など</div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">ケース別入力</div>
+        <div class="cases-grid">
+          <!-- A -->
+          <div class="case-box">
+            <div class="case-box-header"><span class="badge badge-a">A</span>全額給与</div>
+            <div class="input-group" style="margin-bottom:0;">
+              <label class="input-label">給与（万円）</label>
+              <input type="number" id="a_salary" value="800" min="0" />
+            </div>
+          </div>
+          <!-- B1 -->
+          <div class="case-box b1">
+            <div class="case-box-header"><span class="badge badge-b1">B1</span>給与＋業務委託</div>
+            <div class="input-group">
+              <label class="input-label">給与（万円）</label>
+              <input type="number" id="b1_salary" value="680" min="0" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">業務委託（万円）</label>
+              <input type="number" id="b1_freelance" value="120" min="0" />
+            </div>
+            <div class="input-group" style="margin-bottom:0;">
+              <label class="input-label">経費率（%）</label>
+              <input type="number" id="b1_expense" value="20" min="0" max="80" />
+            </div>
+          </div>
+          <!-- B2 -->
+          <div class="case-box b2">
+            <div class="case-box-header"><span class="badge badge-b2">B2</span>給与＋業務委託</div>
+            <div class="input-group">
+              <label class="input-label">給与（万円）</label>
+              <input type="number" id="b2_salary" value="400" min="0" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">業務委託（万円）</label>
+              <input type="number" id="b2_freelance" value="400" min="0" />
+            </div>
+            <div class="input-group" style="margin-bottom:0;">
+              <label class="input-label">経費率（%）</label>
+              <input type="number" id="b2_expense" value="20" min="0" max="80" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="card">
+    <div class="card-header">シミュレーション結果（年次）</div>
+
+    <div class="result-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom; text-align:left;">項目</th>
+            <th colspan="2" class="group-header" style="border-bottom: 2px solid #bfdbfe; color:#1e40af;">A　全額給与</th>
+            <th colspan="2" class="group-header" style="border-bottom: 2px solid #6ee7b7; color:#065f46;">B1　給与＋業務委託</th>
+            <th colspan="2" class="group-header" style="border-bottom: 2px solid #c4b5fd; color:#5b21b6;">B2　給与＋業務委託</th>
+          </tr>
+          <tr class="sub-header">
+            <th class="col-a">年収</th>
+            <th class="col-monthly">月給換算</th>
+            <th class="col-b1">年収</th>
+            <th class="col-monthly">月給換算</th>
+            <th class="col-b2">年収</th>
+            <th class="col-monthly">月給換算</th>
+          </tr>
+        </thead>
+        <tbody id="main-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- DIFF -->
+    <div class="diff-grid">
+      <div class="diff-card">
+        <div class="diff-title"><span class="badge badge-b1">B1</span>− A 差分（年次）</div>
+        <div id="diff-b1"></div>
+      </div>
+      <div class="diff-card">
+        <div class="diff-title"><span class="badge badge-b2">B2</span>− A 差分（年次）</div>
+        <div id="diff-b2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="card">
+    <div class="card-header">計算内訳</div>
+    <div class="tab-row">
+      <button class="tab-btn active-a" id="dtab-a"  onclick="switchDTab('a')">A 詳細</button>
+      <button class="tab-btn"          id="dtab-b1" onclick="switchDTab('b1')">B1 詳細</button>
+      <button class="tab-btn"          id="dtab-b2" onclick="switchDTab('b2')">B2 詳細</button>
+    </div>
+    <div id="dview-a">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;"><span class="badge badge-a">A</span><span style="font-size:13px; color:#4a5878; font-weight:500;">全額給与の内訳</span></div>
+      <div class="result-wrap"><table><thead><tr><th style="text-align:left;">項目</th><th>年次</th><th>月給換算</th><th style="text-align:left;">計算根拠</th></tr></thead><tbody id="a-detail"></tbody></table></div>
+    </div>
+    <div id="dview-b1" style="display:none;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;"><span class="badge badge-b1">B1</span><span style="font-size:13px; color:#4a5878; font-weight:500;">給与＋業務委託（B1）の内訳</span></div>
+      <div class="result-wrap"><table><thead><tr><th style="text-align:left;">項目</th><th>年次</th><th>月給換算</th><th style="text-align:left;">計算根拠</th></tr></thead><tbody id="b1-detail"></tbody></table></div>
+    </div>
+    <div id="dview-b2" style="display:none;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;"><span class="badge badge-b2">B2</span><span style="font-size:13px; color:#4a5878; font-weight:500;">給与＋業務委託（B2）の内訳</span></div>
+      <div class="result-wrap"><table><thead><tr><th style="text-align:left;">項目</th><th>年次</th><th>月給換算</th><th style="text-align:left;">計算根拠</th></tr></thead><tbody id="b2-detail"></tbody></table></div>
+    </div>
+  </div>
+
+  <footer>
+    ※ 本シミュレーターは概算値です。実際の申告・納税には税理士へご相談ください。<br>
+    住民税は標準税率（道府県民税4%＋市区町村民税6%＋均等割5,000円）で計算しています。社会保険料は給与額の15%（労使折半の本人負担相当）で計算しています。
+  </footer>
+</div>
+
+<script>
+const PREF_LIST = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+const sel = document.getElementById('pref');
+PREF_LIST.forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p; sel.appendChild(o); });
+sel.value = '東京都';
+
+function fmt(n) { return Math.round(n).toLocaleString('ja-JP'); }
+function fmtDiff(n) { return (n >= 0 ? '+' : '') + Math.round(n).toLocaleString('ja-JP'); }
+
+function kyuyoKojo(s) {
+  if (s <= 1625000) return 550000;
+  if (s <= 1800000) return Math.floor(s * 0.4) - 100000;
+  if (s <= 3600000) return Math.floor(s * 0.3) + 80000;
+  if (s <= 6600000) return Math.floor(s * 0.2) + 440000;
+  if (s <= 8500000) return Math.floor(s * 0.1) + 1100000;
+  return 1950000;
+}
+function szCalc(ti) {
+  if (ti <= 0) return 0;
+  if (ti <= 1950000) return ti * 0.05;
+  if (ti <= 3300000) return ti * 0.1 - 97500;
+  if (ti <= 6950000) return ti * 0.2 - 427500;
+  if (ti <= 9000000) return ti * 0.23 - 636000;
+  if (ti <= 18000000) return ti * 0.33 - 1536000;
+  if (ti <= 40000000) return ti * 0.4 - 2796000;
+  return ti * 0.45 - 4796000;
+}
+function calcCase(s_man, f_man, expR, od_man) {
+  const s = s_man * 10000, f = f_man * 10000, od = od_man * 10000;
+  const shakai = Math.round(s * 0.15);
+  const kojo = kyuyoKojo(s);
+  const kShotoku = Math.max(0, s - kojo);
+  const fExp = Math.round(f * expR / 100);
+  const jShotoku = Math.max(0, f - fExp);
+  const total = s + f;
+  let kiso = 480000;
+  if (total > 25000000) kiso = 0;
+  else if (total > 24500000) kiso = 160000;
+  else if (total > 24000000) kiso = 320000;
+  const taxS = Math.max(0, kShotoku + jShotoku - shakai - kiso - od);
+  const sz = Math.round(szCalc(taxS) * 1.021);
+  const taxJ = Math.max(0, kShotoku + jShotoku - shakai - 430000 - od);
+  const jz = Math.round(taxJ * 0.10) + 5000;
+  const tedori = total - shakai - sz - jz;
+  return { income: total, s, f, shakai, sz, jz, tedori, kojo, kShotoku, jShotoku, kiso, taxS, taxJ, fExp };
+}
+
+function renderMain(a, b1, b2) {
+  const rows = [
+    { label: '収入合計', a: a.income, b1: b1.income, b2: b2.income },
+    { label: '　うち給与', a: a.s, b1: b1.s, b2: b2.s, sub: true },
+    { label: '　うち業務委託', a: a.f, b1: b1.f, b2: b2.f, sub: true },
+    { label: '社会保険料', a: a.shakai, b1: b1.shakai, b2: b2.shakai },
+    { label: '所得税', a: a.sz, b1: b1.sz, b2: b2.sz },
+    { label: '住民税', a: a.jz, b1: b1.jz, b2: b2.jz },
+    { label: '手取り', a: a.tedori, b1: b1.tedori, b2: b2.tedori, hl: true },
+  ];
+  document.getElementById('main-tbody').innerHTML = rows.map(r => `
+    <tr class="${r.hl ? 'hl' : r.sub ? 'sub' : ''}">
+      <td>${r.label}</td>
+      <td class="col-a">${fmt(r.a)}</td>
+      <td class="col-monthly">${fmt(r.a / 12)}</td>
+      <td class="col-b1">${fmt(r.b1)}</td>
+      <td class="col-monthly">${fmt(r.b1 / 12)}</td>
+      <td class="col-b2">${fmt(r.b2)}</td>
+      <td class="col-monthly">${fmt(r.b2 / 12)}</td>
+    </tr>`).join('');
+}
+
+function renderDiff(base, target, elId) {
+  const items = [
+    { label: '社会保険料', v: target.shakai - base.shakai, inv: true },
+    { label: '所得税',     v: target.sz - base.sz,     inv: true },
+    { label: '住民税',     v: target.jz - base.jz,     inv: true },
+    { label: '手取り',     v: target.tedori - base.tedori, inv: false },
+  ];
+  document.getElementById(elId).innerHTML = items.map(d => {
+    const good = d.inv ? d.v <= 0 : d.v >= 0;
+    return `<div class="diff-row"><span class="diff-label">${d.label}</span><span class="${good ? 'pos' : 'neg'}">${fmtDiff(d.v)} 円</span></div>`;
+  }).join('');
+}
+
+function renderDetail(data, tbodyId, isFreelance, expR) {
+  const rows = [
+    { label: '収入合計', y: data.income, note: isFreelance ? `給与 ${fmt(data.s)} ＋ 業務委託 ${fmt(data.f)}` : `給与 ${fmt(data.s)}`, ded: false },
+    { label: '給与所得控除', y: data.kojo, note: '給与額に応じた法定控除', ded: true },
+    ...(isFreelance ? [{ label: '業務委託経費', y: data.fExp, note: `業務委託×${expR}%`, ded: true }] : []),
+    { label: '社会保険料（控除）', y: data.shakai, note: '給与×15%（労使折半）', ded: true },
+    { label: '基礎控除', y: data.kiso, note: '480,000円（2025年度）', ded: true },
+    { label: '課税所得（所得税）', y: data.taxS, note: '上記控除後の合計所得', ded: false, sep: true },
+    { label: '所得税', y: data.sz, note: '累進課税＋復興特別所得税2.1%', ded: true },
+    { label: '住民税', y: data.jz, note: '10%＋均等割5,000円（基礎控除43万）', ded: true },
+    { label: '手取り', y: data.tedori, note: '', ded: false, hl: true },
+  ];
+  document.getElementById(tbodyId).innerHTML = rows.map(r => `
+    <tr class="${r.hl ? 'hl' : r.sep ? 'sep' : ''}">
+      <td>${r.label}</td>
+      <td class="${r.ded ? 'ded-val' : ''}">${r.ded ? '−' : ''}${fmt(r.y)}</td>
+      <td class="${r.ded ? 'ded-val col-monthly' : 'col-monthly'}">${r.ded ? '−' : ''}${fmt(r.y / 12)}</td>
+      <td class="detail-note">${r.note}</td>
+    </tr>`).join('');
+}
+
+function switchDTab(t) {
+  ['a','b1','b2'].forEach(k => {
+    document.getElementById('dview-' + k).style.display = k === t ? '' : 'none';
+    const btn = document.getElementById('dtab-' + k);
+    btn.className = 'tab-btn' + (k === t ? ' active-' + k : '');
+  });
+}
+
+function getNum(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+function recalc() {
+  const od = getNum('otherDeduction');
+  const a  = calcCase(getNum('a_salary'),  0,                  0,                od);
+  const b1 = calcCase(getNum('b1_salary'), getNum('b1_freelance'), getNum('b1_expense'), od);
+  const b2 = calcCase(getNum('b2_salary'), getNum('b2_freelance'), getNum('b2_expense'), od);
+  renderMain(a, b1, b2);
+  renderDiff(a, b1, 'diff-b1');
+  renderDiff(a, b2, 'diff-b2');
+  renderDetail(a,  'a-detail',  false, 0);
+  renderDetail(b1, 'b1-detail', true,  getNum('b1_expense'));
+  renderDetail(b2, 'b2-detail', true,  getNum('b2_expense'));
+}
+
+document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
+recalc();
+</script>
+</body>
+</html>
